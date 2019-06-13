@@ -16,6 +16,8 @@ from methods.baselinefinetune import BaselineFinetune
 from methods.protonet import ProtoNet
 from methods.matchingnet import MatchingNet
 from methods.relationnet import RelationNet
+from methods.densenet import DenseNet
+from methods.attennet import AttenNet
 from methods.maml import MAML
 from io_utils import model_dict, parse_args, get_resume_file  
 
@@ -51,7 +53,6 @@ def train(base_loader, val_loader, model, optimization, start_epoch, stop_epoch,
 if __name__=='__main__':
     np.random.seed(10)
     params = parse_args('train')
-
 
     if params.dataset == 'cross':
         base_file = configs.data_dir['miniImagenet'] + 'all.json' 
@@ -112,10 +113,9 @@ if __name__=='__main__':
         elif params.method == 'baseline++':
             model           = BaselineTrain( model_dict[params.model], params.num_classes, loss_type = 'dist')
 
-    elif params.method in ['protonet','matchingnet','relationnet', 'relationnet_softmax', 'maml', 'maml_approx']:
+    elif params.method in ['densenet','attennet','protonet','matchingnet','relationnet', 'relationnet_softmax', 'maml', 'maml_approx']:
         n_query = max(1, int(16* params.test_n_way/params.train_n_way)) #if test_n_way is smaller than train_n_way, reduce n_query to keep batch size small
- 
-        train_few_shot_params    = dict(n_way = params.train_n_way, n_support = params.n_shot) 
+        train_few_shot_params    = dict(n_way = params.train_n_way, n_support = params.n_shot)
         base_datamgr            = SetDataManager(image_size, n_query = n_query,  **train_few_shot_params)
         base_loader             = base_datamgr.get_data_loader( base_file , aug = params.train_aug )
          
@@ -126,6 +126,10 @@ if __name__=='__main__':
 
         if params.method == 'protonet':
             model           = ProtoNet( model_dict[params.model], **train_few_shot_params )
+        elif params.method == 'densenet':
+            model           = DenseNet( model_dict[params.model], **train_few_shot_params )
+        elif params.method == 'attennet':
+            model           = AttenNet( model_dict[params.model], **train_few_shot_params)
         elif params.method == 'matchingnet':
             model           = MatchingNet( model_dict[params.model], **train_few_shot_params )
         elif params.method in ['relationnet', 'relationnet_softmax']:

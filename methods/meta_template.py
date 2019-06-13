@@ -7,6 +7,7 @@ import torch.nn.functional as F
 import utils
 from abc import abstractmethod
 
+
 class MetaTemplate(nn.Module):
     def __init__(self, model_func, n_way, n_support, change_way = True):
         super(MetaTemplate, self).__init__()
@@ -26,16 +27,20 @@ class MetaTemplate(nn.Module):
         pass
 
     def forward(self,x):
-        out  = self.feature.forward(x)
+        # feature = nn.DataParallel(self.feature)
+        feature = self.feature
+        out  = feature.forward(x)
         return out
 
     def parse_feature(self,x,is_feature):
         x    = Variable(x.cuda())
+        # feature = nn.DataParallel(self.feature)
+        feature = self.feature
         if is_feature:
             z_all = x
         else:
             x           = x.contiguous().view( self.n_way * (self.n_support + self.n_query), *x.size()[2:]) 
-            z_all       = self.feature.forward(x)
+            z_all       = feature.forward(x)
             z_all       = z_all.view( self.n_way, self.n_support + self.n_query, -1)
         z_support   = z_all[:, :self.n_support]
         z_query     = z_all[:, self.n_support:]
@@ -63,7 +68,7 @@ class MetaTemplate(nn.Module):
             loss = self.set_forward_loss( x )
             loss.backward()
             optimizer.step()
-            avg_loss = avg_loss+loss.data[0]
+            avg_loss = avg_loss+loss.data.item()
 
             if i % print_freq==0:
                 #print(optimizer.state_dict()['param_groups'][0]['lr'])

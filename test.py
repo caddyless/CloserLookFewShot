@@ -19,6 +19,8 @@ from methods.baselinefinetune import BaselineFinetune
 from methods.protonet import ProtoNet
 from methods.matchingnet import MatchingNet
 from methods.relationnet import RelationNet
+from methods.densenet import DenseNet
+from methods.attennet import AttenNet
 from methods.maml import MAML
 from io_utils import model_dict, parse_args, get_resume_file, get_best_file , get_assigned_file
 
@@ -63,6 +65,10 @@ if __name__ == '__main__':
         model           = BaselineFinetune( model_dict[params.model], loss_type = 'dist', **few_shot_params )
     elif params.method == 'protonet':
         model           = ProtoNet( model_dict[params.model], **few_shot_params )
+    elif params.method == 'densenet':
+        model = DenseNet(model_dict[params.model], **few_shot_params)
+    elif params.method == 'attennet':
+        model = AttenNet(model_dict[params.model], **few_shot_params)
     elif params.method == 'matchingnet':
         model           = MatchingNet( model_dict[params.model], **few_shot_params )
     elif params.method in ['relationnet', 'relationnet_softmax']:

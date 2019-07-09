@@ -2,6 +2,7 @@
 
 import backbone
 import torch
+from io_utils import device
 import torch.nn as nn
 from torch.autograd import Variable
 import numpy as np
@@ -58,7 +59,7 @@ class RelationNet(MetaTemplate):
         for epoch in range(100):
             perm_id = np.random.permutation(full_n_support).tolist()            
             sub_x = np.array([z_support_cpu[i,perm_id,:,:,:] for i in range(z_support.size(0))])
-            sub_x = torch.Tensor(sub_x).cuda()
+            sub_x = torch.Tensor(sub_x).to(device)
             if self.change_way:
                 self.n_way  = sub_x.size(0)
             set_optimizer.zero_grad()
@@ -66,11 +67,11 @@ class RelationNet(MetaTemplate):
             scores = self.set_forward(sub_x, is_feature = True)
             if self.loss_type == 'mse':
                 y_oh = utils.one_hot(y, self.n_way)
-                y_oh = Variable(y_oh.cuda())            
+                y_oh = Variable(y_oh.to(device))
 
                 loss =  self.loss_fn(scores, y_oh )
             else:
-                y = Variable(y.cuda())
+                y = Variable(y.to(device))
                 loss = self.loss_fn(scores, y )
             loss.backward()
             set_optimizer.step()
@@ -97,11 +98,11 @@ class RelationNet(MetaTemplate):
         scores = self.set_forward(x)
         if self.loss_type == 'mse':
             y_oh = utils.one_hot(y, self.n_way)
-            y_oh = Variable(y_oh.cuda())            
+            y_oh = Variable(y_oh.to(device))
 
             return self.loss_fn(scores, y_oh )
         else:
-            y = Variable(y.cuda())
+            y = Variable(y.to(device))
             return self.loss_fn(scores, y )
 
 class RelationConvBlock(nn.Module):

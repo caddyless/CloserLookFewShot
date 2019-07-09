@@ -1,8 +1,10 @@
 import torch
 import numpy as np
 
+
 def one_hot(y, num_class):         
     return torch.zeros((len(y), num_class)).scatter_(1, y.unsqueeze(1), 1)
+
 
 def DBindex(cl_data_file):
     class_list = cl_data_file.keys()
@@ -21,6 +23,7 @@ def DBindex(cl_data_file):
     for i in range(cl_num):
         DBs.append( np.max([ (stds[i]+ stds[j])/mdists[i,j]  for j in range(cl_num) if j != i ]) )
     return np.mean(DBs)
+
 
 def sparsity(cl_data_file):
     class_list = cl_data_file.keys()

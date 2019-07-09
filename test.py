@@ -9,7 +9,7 @@ import os
 import glob
 import random
 import time
-
+from io_utils import device
 import configs
 import backbone
 import data.feature_loader as feat_loader
@@ -95,7 +95,7 @@ if __name__ == '__main__':
     else:
        raise ValueError('Unknown method')
 
-    model = model.cuda()
+    model = model.to(device)
 
     checkpoint_dir = '%s/checkpoints/%s/%s_%s' %(configs.save_dir, params.dataset, params.model, params.method)
     if params.train_aug:
@@ -150,7 +150,7 @@ if __name__ == '__main__':
         acc_mean, acc_std = model.test_loop( novel_loader, return_std = True)
 
     else:
-        novel_file = os.path.join( checkpoint_dir.replace("checkpoints","features"), split_str +".hdf5") #defaut split = novel, but you can also test base or val classes
+        novel_file = os.path.join( checkpoint_dir.replace("checkpoints", "features"), split_str +".hdf5") #defaut split = novel, but you can also test base or val classes
         cl_data_file = feat_loader.init_loader(novel_file)
 
         for i in range(iter_num):

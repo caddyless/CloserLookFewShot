@@ -4,6 +4,7 @@ import utils
 import torch
 import torch.nn as nn
 from torch.autograd import Variable
+from io_utils import device
 import numpy as np
 import torch.nn.functional as F
 
@@ -21,14 +22,14 @@ class BaselineTrain(nn.Module):
         self.loss_fn = nn.CrossEntropyLoss()
 
     def forward(self,x):
-        x    = Variable(x.cuda())
+        x    = Variable(x.to(device))
         out  = self.feature.forward(x)
         scores  = self.classifier.forward(out)
         return scores
 
     def forward_loss(self, x, y):
         scores = self.forward(x)
-        y = Variable(y.cuda())
+        y = Variable(y.to(device))
         return self.loss_fn(scores, y )
     
     def train_loop(self, epoch, train_loader, optimizer):

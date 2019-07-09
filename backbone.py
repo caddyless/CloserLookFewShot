@@ -8,7 +8,6 @@ import math
 import numpy as np
 import torch.nn.functional as F
 from torch.nn.utils.weight_norm import WeightNorm
-
 # Basic ResNet model
 
 
@@ -675,6 +674,10 @@ def Conv4SNP():
 
 def AttenNet18(way=5, shot=5):
     return AttenNet(SimpleBlock, [2, 2, 2, 2], [64, 128, 256, 512], way, shot)
+
+
+def AttenNet10(way=5, shot=5):
+    return AttenNet(SimpleBlock, [1, 1, 1, 1], [64, 128, 256, 512], way, shot)
 
 
 def ResNet10(flatten=True):

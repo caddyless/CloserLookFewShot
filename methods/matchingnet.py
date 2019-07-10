@@ -11,6 +11,7 @@ from methods.meta_template import MetaTemplate
 import utils
 import copy
 
+
 class MatchingNet(MetaTemplate):
     def __init__(self, model_func,  n_way, n_support):
         super(MatchingNet, self).__init__( model_func,  n_way, n_support)

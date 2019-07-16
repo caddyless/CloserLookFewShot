@@ -166,7 +166,7 @@ def get_device():
             print('GPU', i, ':', pynvml.nvmlDeviceGetName(handle))
             info = pynvml.nvmlDeviceGetMemoryInfo(handle)
             ratio = info.free / info.total
-            if ratio > 0.9:
+            if ratio > 0.5:
                 available_device.append(str(i))
             print('Memory Total:%.1f GB   Memory Free:%.1f GB   Load:%.2f' %
                   (info.total / 1e9, info.free / 1e9, 1 - info.free / info.total))
@@ -175,13 +175,11 @@ def get_device():
             return False
         visible_device = ','.join(available_device)
         print('GPU ' + visible_device + ' are available')
-        os.environ['CUDA_VISIBLE_DEVICES'] = visible_device
-        device = torch.device('cuda')
-        print(pynvml.nvmlDeviceGetCount())
     else:
-        device = torch.device('cpu')
-    return device
+        visible_device = None
+    return visible_device
 
 
-device = get_device()
-
+visible = get_device()
+os.environ['CUDA_VISIBLE_DEVICES'] = visible
+device = torch.device('cuda')

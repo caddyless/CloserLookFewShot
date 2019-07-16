@@ -616,61 +616,24 @@ class AttenNet(nn.Module):
         trunk = [conv1, bn1, relu, pool1]
 
         indim = 64
-        self.atten1 = Attention2(list_of_out_dims[0], 1, way, shot)
-        self.atten2 = Attention2(list_of_out_dims[1], 1, way, shot)
-        self.atten3 = Attention2(list_of_out_dims[2], 1, way, shot)
-        self.atten4 = Attention2(list_of_out_dims[3], 1, way, shot)
-        self.convblock1 = []
-        for j in range(list_of_num_layers[0]):
-            half_res = False
-            B = block(indim, list_of_out_dims[0], half_res)
-            self.convblock1.append(B)
-            indim = list_of_out_dims[0]
-        self.convblock1 = nn.Sequential(*self.convblock1)
-
-        self.convblock2 = []
-        for j in range(list_of_num_layers[1]):
-            half_res = (j == 0)
-            B = block(indim, list_of_out_dims[1], half_res)
-            self.convblock2.append(B)
-            indim = list_of_out_dims[1]
-        self.convblock2 = nn.Sequential(*self.convblock2)
-
-        self.convblock3 = []
-        for j in range(list_of_num_layers[2]):
-            half_res = (j == 0)
-            B = block(indim, list_of_out_dims[2], half_res)
-            self.convblock3.append(B)
-            indim = list_of_out_dims[2]
-        self.convblock3 = nn.Sequential(*self.convblock3)
-
-        self.convblock4 = []
-        for j in range(list_of_num_layers[3]):
-            half_res = False
-            B = block(indim, list_of_out_dims[3], half_res)
-            self.convblock4.append(B)
-            indim = list_of_out_dims[3]
-        self.convblock4 = nn.Sequential(*self.convblock4)
+        self.atten = Attention2(list_of_out_dims[3], 1, way, shot)
+        for i in range(4):
+            for j in range(list_of_num_layers[i]):
+                half_res = (i >= 1) and (j == 0)
+                B = block(indim, list_of_out_dims[i], half_res)
+                trunk.append(B)
+                indim = list_of_out_dims[i]
 
         self.final_feat_dim = [indim, 7, 7]
         self.coefficient = nn.Parameter(torch.tensor(
-            [0.25, 0.25, 0.25, 0.25]), requires_grad=True)
+            [1.0, 1.0, 1.0, 1.0]), requires_grad=True)
 
         self.trunk = nn.Sequential(*trunk)
 
     def forward(self, x):
         out = self.trunk(x)
-        out = self.convblock1(out)
-        p1 = self.atten1(out)
-        out = self.convblock2(out)
-        p2 = self.atten2(out)
-        out = self.convblock3(out)
-        p3 = self.atten3(out)
-        out = self.convblock4(out)
-        p4 = self.atten4(out)
-        p = torch.stack((p1, p2, p3, p4), dim=2)
-        p = F.softmax(p.mul(self.coefficient).sum(2), dim=1)
-        return p
+        mask = F.softmax(self.atten(out), 1)
+        return out, mask
 
 
 def Conv4():

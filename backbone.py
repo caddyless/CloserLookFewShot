@@ -153,8 +153,8 @@ class BatchNorm2d_fw(
         self.bias.fast = None
 
     def forward(self, x):
-        running_mean = torch.zeros(x.data.size()[1]).cuda()
-        running_var = torch.ones(x.data.size()[1]).cuda()
+        running_mean = torch.zeros(x.data.size()[1]) #cuda
+        running_var = torch.ones(x.data.size()[1])
         if self.weight.fast is not None and self.bias.fast is not None:
             out = F.batch_norm(
                 x,
@@ -508,8 +508,33 @@ class Attention(nn.Module):
 
     def forward(self, x):
         x = self.extract(x)
-
         return self.predict(x)
+
+
+class Attention2(nn.Module):
+    def __init__(self, inchannel, outchannel, way, shot):
+        super(Attention2, self).__init__()
+        self.conv1 = nn.Conv2d(
+            inchannel,
+            outchannel,
+            kernel_size=1,
+            stride=1,
+            padding=0)
+        self.softmax = nn.Softmax(1)
+        self.way = way
+        self.shot = shot
+
+    def extract(self, x):
+        mask = self.conv1(x)
+        input_size = mask.size()
+        mask = mask.view(input_size[0], -1)
+        mask = self.softmax(mask)
+        mask = mask.reshape(input_size)
+        return mask
+
+    def forward(self, x):
+        mask = self.extract(x)
+        return mask
 
 
 class ResNet(nn.Module):
@@ -591,10 +616,10 @@ class AttenNet(nn.Module):
         trunk = [conv1, bn1, relu, pool1]
 
         indim = 64
-        self.atten1 = Attention(list_of_out_dims[0], 1, way, shot)
-        self.atten2 = Attention(list_of_out_dims[1], 1, way, shot)
-        self.atten3 = Attention(list_of_out_dims[2], 1, way, shot)
-        self.atten4 = Attention(list_of_out_dims[3], 1, way, shot)
+        self.atten1 = Attention2(list_of_out_dims[0], 1, way, shot)
+        self.atten2 = Attention2(list_of_out_dims[1], 1, way, shot)
+        self.atten3 = Attention2(list_of_out_dims[2], 1, way, shot)
+        self.atten4 = Attention2(list_of_out_dims[3], 1, way, shot)
         self.convblock1 = []
         for j in range(list_of_num_layers[0]):
             half_res = False

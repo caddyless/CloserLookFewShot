@@ -170,13 +170,14 @@ def get_device():
                 available_device.append(str(i))
             print('Memory Total:%.1f GB   Memory Free:%.1f GB   Load:%.2f' %
                   (info.total / 1e9, info.free / 1e9, 1 - info.free / info.total))
-        print('Total %d devices are available' % len(available_device))
         if len(available_device) == 0:
             print('All devices are occupied')
             return False
-        print(','.join(available_device))
-        os.environ['CUDA_VISIBLE_DEVICES'] = ','.join(available_device)
-        device = torch.device('cuda:' + ','.join(available_device))
+        visible_device = ','.join(available_device)
+        print('GPU ' + visible_device + ' are available')
+        os.environ['CUDA_VISIBLE_DEVICES'] = visible_device
+        device = torch.device('cuda')
+        print(pynvml.nvmlDeviceGetCount())
     else:
         device = torch.device('cpu')
     return device

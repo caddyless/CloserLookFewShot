@@ -63,8 +63,8 @@ def train(
             torch.save({'epoch': epoch, 'state': model.state_dict()}, outfile)
     print('best acc is %3f at epoch %d' % (max_acc, best_epoch))
     with open('./record/result.txt', 'a', encoding='utf-8') as f:
-        f.write('Model is %s, method is %s, best acc is %f at epoch %d \n' %
-                (params.model, params.method, max_acc, best_epoch))
+        f.write('Model is %s, method is %s, shot_num = %d, best acc is %f at epoch %d \n' %
+                (params.model, params.method, params.n_shot, max_acc, best_epoch))
     return model
 
 

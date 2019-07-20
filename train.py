@@ -63,8 +63,8 @@ def train(
             torch.save({'epoch': epoch, 'state': model.state_dict()}, outfile)
     print('best acc is %3f at epoch %d' % (max_acc, best_epoch))
     with open('./record/result.txt', 'a', encoding='utf-8') as f:
-        f.write('Model is %s, method is %s, shot_num = %d, best acc is %f at epoch %d \n' %
-                (params.model, params.method, params.n_shot, max_acc, best_epoch))
+        f.write('K num is %d, Model is %s, method is %s, shot_num = %d, best acc is %f at epoch %d \n' %
+                (params.k_num, params.model, params.method, params.n_shot, max_acc, best_epoch))
     return model
 
 
@@ -121,7 +121,7 @@ if __name__ == '__main__':
                 params.stop_epoch = 600  # default
 
     if params.method in ['baseline', 'baseline++']:
-        base_datamgr = SimpleDataManager(image_size, batch_size=16)
+        base_datamgr = SimpleDataManager(image_size, batch_size=params.n_query)
         base_loader = base_datamgr.get_data_loader(
             base_file, aug=params.train_aug)
         val_datamgr = SimpleDataManager(image_size, batch_size=64)
@@ -141,7 +141,7 @@ if __name__ == '__main__':
     elif params.method in ['densenet', 'attennet', 'protonet', 'matchingnet', 'relationnet', 'relationnet_softmax', 'maml', 'maml_approx']:
         # if test_n_way is smaller than train_n_way, reduce n_query to keep
         # batch size small
-        n_query = max(1, int(16 * params.test_n_way / params.train_n_way))
+        n_query = max(1, int(params.n_query * params.test_n_way / params.train_n_way))
         train_few_shot_params = dict(
             n_way=params.train_n_way,
             n_support=params.n_shot)
@@ -166,6 +166,7 @@ if __name__ == '__main__':
         elif params.method == 'densenet':
             model = DenseNet(model_dict[params.model], **train_few_shot_params)
         elif params.method == 'attennet':
+            train_few_shot_params['k'] = params.k_num
             model = AttenNet(model_dict[params.model], **train_few_shot_params)
         elif params.method == 'matchingnet':
             model = MatchingNet(

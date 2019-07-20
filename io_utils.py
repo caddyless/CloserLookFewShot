@@ -49,6 +49,11 @@ def parse_args(script):
         default=5,
         type=int,
         help='class num to classify for testing (validation) ')
+    parser.add_argument(
+        '--n_query',
+        default=16,
+        type=int,
+        help='number of query data in each class')
     # baseline and baseline++ only use this parameter in finetuning
     parser.add_argument(
         '--n_shot',
@@ -69,6 +74,11 @@ def parse_args(script):
             default=200,
             type=int,
             help='total number of classes in softmax, only used in baseline')
+        parser.add_argument(
+            '--k_num',
+            default=40,
+            type=int,
+            help='The number of features used')
         parser.add_argument(
             '--save_freq',
             default=50,
@@ -180,6 +190,6 @@ def get_device():
     return visible_device
 
 
-visible = get_device()
-os.environ['CUDA_VISIBLE_DEVICES'] = visible
+# visible = get_device()
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 device = torch.device('cuda')

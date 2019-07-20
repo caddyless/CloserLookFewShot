@@ -80,4 +80,3 @@ class SetDataManager(DataManager):
         data_loader = torch.utils.data.DataLoader(dataset, **data_loader_params)
         return data_loader
 
-

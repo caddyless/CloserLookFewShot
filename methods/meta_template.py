@@ -21,7 +21,7 @@ class MetaTemplate(nn.Module):
         self.change_way = change_way  #some methods allow different_way classification during training and test
 
     @abstractmethod
-    def set_forward(self,x,is_feature):
+    def set_forward(self, x, is_feature):
         pass
 
     @abstractmethod
@@ -34,7 +34,7 @@ class MetaTemplate(nn.Module):
         out  = feature.forward(x)
         return out
 
-    def parse_feature(self,x,is_feature):
+    def parse_feature(self, x, is_feature):
         x    = Variable(x.to(device))
         # feature = nn.DataParallel(self.feature)
         feature = self.feature
@@ -64,8 +64,8 @@ class MetaTemplate(nn.Module):
     def train_loop(self, epoch, train_loader, optimizer ):
         print_freq = 10
 
-        avg_loss=0
-        for i, (x,_ ) in enumerate(train_loader):
+        avg_loss = 0
+        for i, (x, _) in enumerate(train_loader):
             self.n_query = x.size(1) - self.n_support           
             if self.change_way:
                 self.n_way  = x.size(0)
@@ -79,8 +79,8 @@ class MetaTemplate(nn.Module):
                 #print(optimizer.state_dict()['param_groups'][0]['lr'])
                 print('Epoch {:d} | Batch {:d}/{:d} | Loss {:f}'.format(epoch, i, len(train_loader), avg_loss/float(i+1)))
 
-    def test_loop(self, test_loader, record = None):
-        correct =0
+    def test_loop(self, test_loader, record=None):
+        correct = 0
         count = 0
         acc_all = []
         
@@ -95,7 +95,7 @@ class MetaTemplate(nn.Module):
         acc_all  = np.asarray(acc_all)
         acc_mean = np.mean(acc_all)
         acc_std  = np.std(acc_all)
-        print('%d Test Acc = %4.2f%% +- %4.2f%%' %(iter_num,  acc_mean, 1.96* acc_std/np.sqrt(iter_num)))
+        print('%d Test Acc = %4.2f%% +- %4.2f%%' %(iter_num,  acc_mean, 1.96 * acc_std/np.sqrt(iter_num)))
 
         return acc_mean
 

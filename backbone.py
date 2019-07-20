@@ -598,7 +598,8 @@ class AttenNet(nn.Module):
             list_of_num_layers,
             list_of_out_dims,
             way,
-            shot):
+            shot,
+            k):
         # list_of_num_layers specifies number of layers in each stage
         # list_of_out_dims specifies number of output channel for each stage
         super(AttenNet, self).__init__()
@@ -625,15 +626,20 @@ class AttenNet(nn.Module):
                 indim = list_of_out_dims[i]
 
         self.final_feat_dim = [indim, 7, 7]
-        self.coefficient = nn.Parameter(torch.tensor(
-            [1.0, 1.0, 1.0, 1.0]), requires_grad=True)
-
         self.trunk = nn.Sequential(*trunk)
+        self.k = k
 
     def forward(self, x):
         out = self.trunk(x)
-        mask = F.softmax(self.atten(out), 1)
-        return out, mask
+        mask = self.atten(out)
+        mask = mask.view(mask.size(0), -1)
+        topk_data, topk_indices = mask.topk(self.k, 1)
+        out = out.view(*out.size()[:2], -1)
+        new_out = torch.zeros((*out.size()[:2], self.k), dtype=torch.float, device=out.device)
+        for i in range(out.size(0)):
+            inter = out[i, :, topk_indices[i]]
+            new_out[i, :, :] = inter
+        return new_out
 
 
 def Conv4():
@@ -664,8 +670,8 @@ def AttenNet18(way=5, shot=5):
     return AttenNet(SimpleBlock, [2, 2, 2, 2], [64, 128, 256, 512], way, shot)
 
 
-def AttenNet10(way=5, shot=5):
-    return AttenNet(SimpleBlock, [1, 1, 1, 1], [64, 128, 256, 512], way, shot)
+def AttenNet10(way=5, shot=5, k=40):
+    return AttenNet(SimpleBlock, [1, 1, 1, 1], [64, 128, 256, 512], way, shot, k=k)
 
 
 def ResNet10(flatten=True):
